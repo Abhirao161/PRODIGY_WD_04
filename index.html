@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .weather-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            padding: 20px;
+            text-align: center;
+            width: 300px;
+        }
+        .weather-card h2 {
+            margin: 10px 0;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .input-group button {
+            padding: 8px;
+            border: none;
+            background: #4facfe;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .input-group button:hover {
+            background: #00c6ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="weather-card">
+        <h1>Weather App</h1>
+        <div class="input-group">
+            <input type="text" id="locationInput" placeholder="Enter location">
+            <button onclick="fetchWeather()">Search</button>
+        </div>
+        <button onclick="getLocation()">Use Current Location</button>
+        <div id="weatherDetails"></div>
+    </div>
+
+    <script>
+        const apiKey = 'YOUR_API_KEY'; // Replace with your API key
+
+        async function fetchWeather(location) {
+            const loc = location || document.getElementById('locationInput').value;
+            if (!loc) return alert('Please enter a location.');
+
+            try {
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${loc}&units=metric&appid=${apiKey}`);
+                if (!response.ok) throw new Error('Location not found');
+                const data = await response.json();
+                displayWeather(data);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function displayWeather(data) {
+            document.getElementById('weatherDetails').innerHTML = `
+                <h2>${data.name}</h2>
+                <p>${data.weather[0].description}</p>
+                <p><strong>${data.main.temp}°C</strong></p>
+                <p>Humidity: ${data.main.humidity}%</p>
+                <p>Wind: ${data.wind.speed} m/s</p>
+            `;
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const { latitude, longitude } = position.coords;
+                    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`)
+                        .then(response => response.json())
+                        .then(data => displayWeather(data))
+                        .catch(() => alert('Failed to fetch weather data.'));
+                }, () => alert('Location access denied.'));
+            } else {
+                alert('Geolocation not supported by this browser.');
+            }
+        }
+    </script>
+</body>
+</html>
